@@ -1,0 +1,6 @@
+inicio
+a=2
+2IF2
+a = 2
+fin
+
