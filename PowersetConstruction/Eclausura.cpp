@@ -16,18 +16,17 @@ set<int> Eclausura(set<int> R,set<int> S,Tabela Transiciones){
 	set<int> clausura (R); 
 	set<int>::iterator iter;
 	//Apilamos todos los estados de R
-	for(iter=R.begin(); iter!=R.end();++iter) 
+	for(iter=clausura.begin(); iter!=clausura.end();++iter) 
 		Pila.push(*iter);
 	while(!Pila.empty())
 	{
 		int actual=Pila.top();
 		Pila.pop();
-		cout<<actual<<endl;
 		for(iter=S.begin(); iter!=S.end();++iter)
 			if(Transiciones[actual][*iter]==-1)
-				if(find(R.begin(),R.end(),*iter)==R.end())
+				if(find(clausura.begin(),clausura.end(),*iter)==clausura.end())
 				{
-					R.insert(*iter);
+					clausura.insert(*iter);
 					Pila.push(*iter);
 				}	
 		
@@ -52,9 +51,12 @@ int main(int argc, char *argv[]) {
 	set<int> R(r.begin(), r.end());
 	set<int> estados(v.begin(), v.end());
 	set<int>::iterator iter;
-	
-	Eclausura(R,estados,trans);
-	
+	set<int> clausura;
+	clausura=Eclausura(R,estados,trans);
+	for(auto it=clausura.begin();it!=clausura.end();it++)
+		cout<<*it<<" ";
+	cout<<endl;  
+	cout<<clausura.size()<<endl;
 	return 0;
 }
 
