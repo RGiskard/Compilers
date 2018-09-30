@@ -9,6 +9,7 @@
 
 using namespace std;
 typedef map<int,map<int,int>> Tabela;
+typedef map<int,map<int,set<int>>> TabelaState;
 
 set<int> Eclausura(set<int> R,set<int> S,Tabela Transiciones){
 	//Pila 
@@ -42,8 +43,15 @@ int main(int argc, char *argv[]) {
 	trans[3][4]=1;
 	trans[5][6]=0;
 	trans[6][1]=1;
-	
-	
+	//Tabla Estado vs Entrada
+	TabelaState tranState;
+	tranState[1][-1]=set<int>();
+	(tranState[1][-1]).insert(2);
+	(tranState[1][-1]).insert(5);
+	cout<<"-----"<<endl;
+	for(auto it=(tranState[1][-1]).begin();it!=(tranState[1][-1]).end();it++)
+		cout<<" "<<*it<<endl;
+	cout<<"------"<<endl;
 	vector<int> v;
 	vector<int> r;
 	v.push_back(1);v.push_back(2);v.push_back(3);v.push_back(4);v.push_back(5);v.push_back(6);v.push_back(6);
