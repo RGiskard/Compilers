@@ -21,8 +21,8 @@ struct Automata
 	set<int> estados;
 	Tabela tablaSvsS;
 	TabelaState tablaSvsE;
-	set<int> aceptores;
-	Automata(set<int> i,set<int>e,set<int>es,Tabela T,TabelaState TT,set<int> a)
+	set<set<int>> aceptores;
+	Automata(set<int> i,set<int>e,set<int>es,Tabela T,TabelaState TT,set<set<int>> a)
 		:inicial(i),entradas(e),estados(es),tablaSvsS(T),tablaSvsE(TT),aceptores(a)
 	{
 	}
@@ -35,6 +35,15 @@ void printSet(set<T> conjunto,ostream& os)
 		os<<*it<<" ";
 	os<<"}"<<endl;
 }	
+
+/*Interseccion de conjuntos*/
+set<int> insersecto(set<int> A, set<int> B)
+{
+	set<int> intersect;
+	set_intersection(A.begin(),A.end(),B.begin(),B.end(),
+					 std::inserter(intersect,intersect.begin()));
+	return intersect;
+}
 
 /*Union de conjuntos*/
 template<typename T>
@@ -146,9 +155,25 @@ void PowersetConstruction(Automata afnd,ostream & os)
 		Asociar[(*it).first]=i;
 		i++;
 	}
-	os<<"Estados de Aceptacion"<<endl;
+	os<<"Estados de Aceptacion: ";
 	//buscar Estado de aceptación:
-	os<<"4"<<endl;
+	set<set<int>> Aceptores;
+	for(auto it=D_est.begin();it!=D_est.end();it++)
+	{
+		for(auto iter=afnd.aceptores.begin();iter!=afnd.aceptores.end();iter++)
+		{
+			set<int> intersec=insersecto(*it,*iter);
+			if(intersec.size()!=0)
+			   Aceptores.insert(*it);
+		}	
+	}	
+	os<<Aceptores.size()<<endl;
+	for(auto it=Aceptores.begin();it!=Aceptores.end();it++)
+	{
+		os<<Asociar[*it]<<"= ";
+		printSet(*it,os);
+	}	
+	
 	os<<"Transiciones de estado (z,y,z)"<<endl;
 	for(auto iter=D_est.begin();iter!=D_est.end();iter++)
 	{
@@ -207,10 +232,14 @@ void execute(const char *entrada,const char *salida)
 		//Alfabeto
 		set<int> Sigma(Entradas.begin(),Entradas.end());
 		//estados de aceptacion
-		set<int> T(aceptores.begin(),aceptores.end());
-		
-		//printSet(Eclausura(S0,S,trans),cout);
-		//printSet(Mover(S0,0,tranState),cout);
+		set<set<int>> T;
+		for(int i=0;i<totalEstadosAceptacion;i++)
+			for(auto it=aceptores.begin();it!=aceptores.end();it++){
+				set<int> temp;
+				temp.insert(*it);
+				T.insert(temp);	
+			}
+
 		myfile.close();
 		Automata afnd(S0,Sigma,S,trans,tranState,T);
 		ofstream ofs(salida);
