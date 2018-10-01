@@ -14,13 +14,26 @@ using namespace std;
 typedef map<int,map<int,int>> Tabela;
 typedef map<int,map<int,set<int>>> TabelaState;
 /*Imprimir conjuntos*/
+struct Automata
+{
+	set<int> inicial;
+	set<int> entradas;
+	set<int> estados;
+	Tabela tablaSvsS;
+	TabelaState tablaSvsE;
+	set<int> aceptores;
+	Automata(set<int> i,set<int>e,set<int>es,Tabela T,TabelaState TT,set<int> a)
+		:inicial(i),entradas(e),estados(es),tablaSvsS(T),tablaSvsE(TT),aceptores(a)
+	{
+	}
+};
 template<typename T>
 void printSet(set<T> conjunto,ostream& os)
 {
 	os<<"{";
 	for(auto it=conjunto.begin();it!=conjunto.end();it++)
 		os<<*it<<" ";
-	os<<"}";
+	os<<"}"<<endl;
 }	
 
 /*Union de conjuntos*/
@@ -86,11 +99,56 @@ vector<int> split(const string &s, char delim) {
 	return intNumbers;
 }
 
+bool marcas(map<set<int>,bool> mapa,set<int> &R)
+{
+	for(auto it=mapa.begin();it!=mapa.end();it++)
+	{	
+		if(!(*it).second)
+		{
+			R=(*it).first;
+			return false;
+		}
+	}
+	return true;
+}
 
+void PowersetConstruction(Automata afnd,ostream & os)
+{
+	set<int> R;
+	set<int> UU;
+	map<set<int>,bool> mapa;
+	map<set<int>,map<int,set<int>>> nTransiciones;
+	set<set<int>> D_est;
+	D_est.insert(Eclausura(afnd.inicial,afnd.estados,afnd.tablaSvsS));
+	mapa[Eclausura(afnd.inicial,afnd.estados,afnd.tablaSvsS)]=false;
+	while(!marcas(mapa,R))
+	{
+		mapa[R]=true;
+		for(auto it=afnd.entradas.begin();it!=afnd.entradas.end();it++)
+		{
+			UU=Eclausura(Mover(R,*it,afnd.tablaSvsE),afnd.estados,afnd.tablaSvsS);
+			if(find(D_est.begin(),D_est.end(),UU)==D_est.end())
+			{
+				D_est.insert(UU);
+				mapa[UU]=false;
+			}	
+			nTransiciones[R][*it]=UU;
+		}
+		
+	}
+	int i=0;
+	for(auto it=mapa.begin();it!=mapa.end();it++)
+	{	
+		os<<i<<"= ";
+		printSet((*it).first,os);
+		i++;
+	}
+}	
 
-int main () {
+void execute(const char *entrada,const char *salida)
+{
 	string line;
-	ifstream myfile ("entrada.txt");
+	ifstream myfile (entrada);
 	if (myfile.is_open())
 	{
 		//while ( getline (myfile,line) )
@@ -140,13 +198,18 @@ int main () {
 		set<int> T(aceptores.begin(),aceptores.end());
 		
 		//printSet(Eclausura(S0,S,trans),cout);
-		printSet(Mover(S0,0,tranState),cout);
+		//printSet(Mover(S0,0,tranState),cout);
 		myfile.close();
+		Automata afnd(S0,Sigma,S,trans,tranState,T);
+		ofstream ofs(salida);
+		PowersetConstruction(afnd,ofs);
+		
 	}
 	else cout << "Unable to open file"; 
+}
+
+int main (int argc, char *argv[]) {
 	
-	
-	//for(auto it=elementos.begin();it!=elementos.end();it++)
-	//	cout<<*it<<" ";
+	execute("entrada.txt","salida.txt");
 	return 0;
 }
