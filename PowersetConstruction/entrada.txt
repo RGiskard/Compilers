@@ -22,3 +22,5 @@ Transiciones (x,y,z)
 7 0 8
 8 1 9
 9 1 10
+Inicial
+0

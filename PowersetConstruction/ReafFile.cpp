@@ -15,12 +15,12 @@ typedef map<int,map<int,int>> Tabela;
 typedef map<int,map<int,set<int>>> TabelaState;
 /*Imprimir conjuntos*/
 template<typename T>
-void printSet(set<T> conjunto)
+void printSet(set<T> conjunto,ostream& os)
 {
-	cout<<"{";
+	os<<"{";
 	for(auto it=conjunto.begin();it!=conjunto.end();it++)
-		cout<<*it<<",";
-	cout<<"}";
+		os<<*it<<" ";
+	os<<"}";
 }	
 
 /*Union de conjuntos*/
@@ -30,6 +30,38 @@ set<T> U(set<T> A,set<T> B){
 	for(auto it=B.begin();it!=B.end();it++)
 		unir.insert(*it);
 	return unir;
+}	
+
+set<int> Eclausura(set<int> R,set<int> S,Tabela Transiciones){
+	//Pila 
+	stack<int> Pila;
+	set<int> clausura (R); 
+	set<int>::iterator iter;
+	//Apilamos todos los estados de R
+	for(iter=clausura.begin(); iter!=clausura.end();++iter) 
+		Pila.push(*iter);
+	while(!Pila.empty())
+	{
+		int actual=Pila.top();
+		Pila.pop();
+		for(iter=S.begin(); iter!=S.end();++iter)
+			if(Transiciones[actual][*iter]==-1)
+			if(find(clausura.begin(),clausura.end(),*iter)==clausura.end())
+		{
+			clausura.insert(*iter);
+			Pila.push(*iter);
+		}	
+			
+	}
+	return clausura;
+}
+//conjunto,entrada,tabla
+set<int> Mover(set<int> R,int u,TabelaState states)
+{
+	set<int> move;
+	for(auto it=R.begin();it!=R.end();it++)
+		move=U(move,states[*it][u]);
+	return move;
 }	
 
 vector<string> &split(const string &s, char delim,vector<string> &elems) {
@@ -96,11 +128,19 @@ int main () {
 			(tranState[tempTransition[0]][tempTransition[1]]).insert(tempTransition[2]);
 			//cout<<line<<endl;
 		}
-		for(auto it=trans.begin();it!=trans.end();it++);
-		//cout<<tranState.size()<<endl;
+		getline(myfile,line);//Estado incial
+		getline(myfile,line);
+		//Estado inicial
+		set<int> S0;
+		S0.insert((atoi(line.c_str()))); 
+		set<int> S(estados.begin(),estados.end());
+		//Alfabeto
+		set<int> Sigma(Entradas.begin(),Entradas.end());
+		//estados de aceptacion
+		set<int> T(aceptores.begin(),aceptores.end());
 		
-
-		printSet(U(tranState[3][-1],tranState[6][-1]));
+		//printSet(Eclausura(S0,S,trans),cout);
+		printSet(Mover(S0,0,tranState),cout);
 		myfile.close();
 	}
 	else cout << "Unable to open file"; 
