@@ -137,11 +137,23 @@ void PowersetConstruction(Automata afnd,ostream & os)
 		
 	}
 	int i=0;
+	map<set<int>,int> Asociar;
+	os<<"Estados "<<endl;
 	for(auto it=mapa.begin();it!=mapa.end();it++)
 	{	
 		os<<i<<"= ";
 		printSet((*it).first,os);
+		Asociar[(*it).first]=i;
 		i++;
+	}
+	os<<"Estados de Aceptacion"<<endl;
+	//buscar Estado de aceptación:
+	os<<"4"<<endl;
+	os<<"Transiciones de estado (z,y,z)"<<endl;
+	for(auto iter=D_est.begin();iter!=D_est.end();iter++)
+	{
+		for(auto it=afnd.entradas.begin();it!=afnd.entradas.end();it++)
+			os<<Asociar[*iter]<<" "<<*it<<" "<<Asociar[nTransiciones[*iter][*it]]<<endl; 
 	}
 }	
 
@@ -205,7 +217,7 @@ void execute(const char *entrada,const char *salida)
 		PowersetConstruction(afnd,ofs);
 		
 	}
-	else cout << "Unable to open file"; 
+	else cout << "No se pudo abrir el archivo"; 
 }
 
 int main (int argc, char *argv[]) {
