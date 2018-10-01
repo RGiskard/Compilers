@@ -222,6 +222,13 @@ void execute(const char *entrada,const char *salida)
 
 int main (int argc, char *argv[]) {
 	
-	execute("entrada.txt","salida.txt");
+	//execute("entrada.txt","salida.txt");
+	//return 0;	
+	if (argc==1)
+	{
+		printf("Debes ingresar mas parametros...\n");
+		return 1;
+	}
+	execute(argv[1],argv[2]);
 	return 0;
 }
