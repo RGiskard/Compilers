@@ -1,7 +1,15 @@
-#include <iostream>
-using namespace std;
+#include <stdio.h>
+#include "driver.h"
+
 int main()
 {
-	cout<<"Hello Worl"<<endl;
-	return 0;
+  float resultado = 0.0;
+  calculadora_driver driver;
+  if(driver.parse("entrada.txt")){
+    printf("La entrada es incorrecta\n");
+  }else{
+    printf("La entrada es correcta\n");
+    //printf("Resultado = %f\n",driver.resultado);
+  }
+  return 0;
 }
