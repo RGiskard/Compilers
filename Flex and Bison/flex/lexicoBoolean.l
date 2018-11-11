@@ -9,6 +9,7 @@
 %option noyywrap
 
 SIMBOLO [0-1]
+DIGITO	[0-9]
 LETRA [a-zA-ZñÑ]
 PARENTESISI [(]
 PARENTESISD [)]
