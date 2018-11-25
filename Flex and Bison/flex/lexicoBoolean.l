@@ -13,7 +13,6 @@ DIGITO	[0-9]
 LETRA [a-zA-ZñÑ]
 PARENTESISI [(]
 PARENTESISD [)]
-OPEPLUS [+]
 NOT [~]
 
 
