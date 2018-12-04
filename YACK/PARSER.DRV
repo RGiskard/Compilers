@@ -1,0 +1,270 @@
+
+int DEBUG=0;  /* set to 1 to DEBUG */
+#ifndef EOF
+ #include <stdio.h>
+#endif
+
+#define _sMAXSTCK  512
+
+#ifndef    YYSTYPE
+#define    YYSTYPE int
+#endif
+int       _sSTCK[_sMAXSTCK],*_pS, _tsSTCK[256],*_ptS, *_LIMS;
+YYSTYPE   _vSTCK[_sMAXSTCK],*_VS, _yyval, yylval;
+
+#ifndef _MAXERR
+#define _MAXERR 10
+#endif
+int _Nshift, _tk[3];
+
+
+yyparse()
+{ int _tok,_cst,_nst,_c,_i,_j,_p, _step,_nerror,_errprod,_Cact;
+  char _temp[80]; _typeACT * _ACT; int _Stred[5],_Nred;
+
+  _tok=-4; _pS=_sSTCK; *_pS=0; _VS=_vSTCK; _LIMS=_sSTCK+_sMAXSTCK;
+  _nerror=_step=_errprod=0; _VS++;  _Cact=1;
+   _temp[0]='\n'; _temp[1]=0;
+  while (1)
+  { _cst= *_pS;
+
+     if (DEBUG && _errprod==0)
+     { fprintf(stderr,_temp);
+
+       sprintf(_temp,"%3d) state=%-3d tok=%-3d StackSize=%-3d ",
+       _step++,_cst,_tok,_pS-_sSTCK);
+      if ( _step%6==0) _wait();
+     }
+    if (_Cact==1) _tok=-4;
+    _Cact=_getAct(_cst,_tok, &_nst);
+    if (_Cact==3) goto _RedA;
+
+    if (_tok== -4)
+    { if (_Nshift==0)  _tok=yylex();
+      else
+      {  _tok=_tk[0]; _tk[0]=_tk[1]; _tk[1]=_tk[2]; _Nshift--; }
+    }
+    if (_tok== -1 && (_cst==1 || _nerror>=_MAXERR))
+       {
+
+  _endparser:
+
+	if (DEBUG)
+	  fprintf(stderr,"%3d) state=%-3d tok=%-3d StackSize=%-3d\t* end of parser\n",
+	  _step,_cst,_tok,_pS-_sSTCK);
+
+	if (_nerror)
+	 fprintf(stderr,"\n\t*** found %d error(s) ***\n",_nerror);
+	 return _nerror;
+	}
+
+    _Cact=_getAct(_cst,_tok, &_nst);
+
+ _ShfA:
+     if (_Cact==0) goto _ErrA;
+     if (_errprod) _errprod--;
+     if (_Cact==1)   /* shift */
+      {  if (DEBUG)
+		 sprintf(_temp+35,"\t*shift %d by tok %d\n",_nst,_tok);
+	  _pS++; *_pS=_nst;
+	  *_VS=yylval; _VS++;
+	 continue;
+       }
+
+ _RedA:
+	/* reduction */
+	       _RED=(_typeRED *)_tabRED -4-_nst;
+	       _i=_RED->_size; 	_yyval=_VS[-_i];
+#ifdef _nSEM
+	  sem(_RED->_sem);
+#endif
+                /* reduce STACK */
+		_pS-=_i; _pS++;  _VS-=_i;  *_VS=_yyval; _VS++;
+		*_pS=fgoto(_pS[-1],_RED->_nt);
+
+		if (DEBUG)
+		  sprintf(_temp+35,"\t*red.%-d  length %-d goto %-d\n",
+		   _RED->_rule,_i,*_pS);
+		 continue;
+
+
+      /* deal with error */
+    _ErrA:   _nerror++;
+       sprintf(_temp,"\n\tsyntax error: illegal token %d",_tok);
+       yyerror(_temp);  _temp[0]=0;
+
+
+      if (_nerror>=_MAXERR) goto _endparser;
+
+#ifdef _errtok
+
+       _i=_pS-_sSTCK;
+
+	while (_i>=0)
+	{ _nst=_sSTCK[_i];
+	  _Cact=_getAct(_nst,_errtok, &_nst);
+	  if (_Cact==1)
+
+	  { if (DEBUG)
+	     { _j=_pS-_sSTCK;
+	       while (_j>_i)
+	       fprintf(stderr,"\n\tpopping state %d",_sSTCK[_j--]);
+	       fprintf(stderr,"\n\trecovered by shifting error token\n");
+	      }
+	    _i++;
+	    _pS=_sSTCK+_i; *_pS=_nst; _VS=_vSTCK+_i;
+
+	    _tok=-4;  _cst=_nst;
+	    while (1)
+	     { _Cact=_getAct(_cst,_tok, &_nst);
+		 if (_Cact>0)
+		 { _errprod=2;
+		  if (DEBUG)
+		 fprintf(stderr,"%3d) state=%-3d tok=%-3d StackSize=%-3d\n",
+		 _step++,_cst,_tok,_pS-_sSTCK);
+		  goto _ShfA;
+		 }
+		 _tok=yylex();
+		 if (_tok==-1) goto _endparser;
+	       }
+
+	    }
+	_i--;
+	}
+
+#endif
+     _i=0;
+     do { _tk[_i++]=_tok; _tok=yylex();} while (_tok!=-1 && _i<3);
+     _Nshift=_i; _Nred=0;
+
+      _p=_rowACT[_cst]; _c=_limACT[_cst];
+     
+
+ _test:  _tok=_tk[0];
+     _ACT=(_typeACT *) _tabACT + _p;
+
+     for (_i=0;_i<_c;_i++,_ACT++)
+     {  _nst=_ACT->_state;
+	 _Cact=_getAct(_nst,_tok, &_nst);
+	 if (_Cact==0) continue;
+	 if (_Cact>=2) { _Stred[_Nred++]=_p+_i; continue;}
+	 copystack(); _ptS++; *_ptS=_nst;
+	 if (frecover())  goto _recover;
+     }
+
+    for (_i=0;_i<_Nred;_i++)
+     {  _ACT=(_typeACT *) _tabACT +_Stred[_i];
+	/* _nst=_Stred[_Nred--]; */
+	copystack(); _ptS++; *_ptS=_nst;
+         if (frecover()) goto _recover;
+     }
+
+    for (_i=0;_i<_Nshift;_i++)  _tk[_i]=_tk[_i+1]; _Nshift--;
+
+    if (_Nshift>=1)
+    {  _Cact=_getAct(_cst,_tk[0], &_nst);
+       if (_Cact)
+       { copystack();
+	if (frecover())
+	{ if (DEBUG) fprintf(stderr,"recovered by discarding tok %d\n",_tok);
+	  goto _done;
+	}
+
+       }
+    }
+
+
+    if (_tk[_Nshift-1]==-1 || _nerror>=_MAXERR) goto _endparser;
+    /*  _nerror++; */
+    _tk[_Nshift++]=yylex();
+    goto _test;
+
+    _recover:
+      if (DEBUG) fprintf(stderr,"recovered by inserting tok %d\n",
+	    _ACT->_tok);
+    _pS++; *_pS=_nst; _VS++;
+    printf("Nshift %d \n",_Nshift);
+    _done: _tok=-4;  continue;
+ }
+
+}
+
+copystack()
+{ char *s, *t; int n;
+  n=_pS-_sSTCK;  _ptS=_tsSTCK+n;
+  n*=sizeof(int);   s=(char *) _sSTCK;  t=(char *) _tsSTCK;
+  while (n-->=0) *t++= *s++;
+}
+
+
+frecover()
+
+{ int _tok,* _ptk,_cst,_nst, _nshift,_i,_p,_c, _Cact;
+  _tok= -4; _nshift=1; _ptk=_tk;
+  while (1)
+  { if (_nshift>=_Nshift) return 1;
+
+    _cst= *_ptS;
+    _Cact=_getAct(_cst,_tok, &_nst);
+    if (_Cact==3) goto _RedA;
+
+     if (_tok== -4)  {_tok= *_ptk++ ; _nshift++; }
+
+     if (_tok== -1 && (_cst==1 || _nshift<_Nshift)) return 0;
+
+    _Cact=_getAct(_cst,_tok, &_nst);
+     if (_Cact==0) return 0;
+
+
+     if (_Cact==1)
+	{  _ptS++; *_ptS=_nst; _tok= -4; continue; }
+
+   _RedA:
+
+     _RED=(_typeRED *)_tabRED;  _RED+=(-4-_nst);
+       _c=_RED->_size;  _ptS-=_c;  _ptS++;
+       *_ptS=fgoto(_ptS[-1],_RED->_nt);
+
+   }
+}
+
+fgoto(_s,_n)
+int _s,_n;
+{ int _i,_sg;
+  _GOTO=(_typeGOTO *) _tabGOTO;
+  for (_i=0;_i<_nGOTO;_i++,_GOTO++)
+  { _sg=_GOTO->_cstate;
+    if (_sg<_s) continue;
+    if (_sg==_s && _GOTO->_nt==_n) return _GOTO->_nstate;
+  }
+}
+
+_wait()
+{ int _c;
+   fprintf(stderr,"\n\t\tpress ESC to  continue ...");
+   do   _c=getch(); while (_c!=27);
+   fprintf(stderr,"\n");
+}
+
+_getAct(_cst,_tok, _pnst) /* return 1=shift 2= red  3=only red */
+int _cst,_tok, * _pnst;
+{ _typeACT * _ACT; int _c,_i,_p;
+      _p=_rowACT[_cst]; _c=_limACT[_cst];
+     _ACT=(_typeACT *) _tabACT; _ACT+=_p;
+
+     if (_c==1  && _ACT[0]._tok== -2)
+		{ *_pnst=_ACT[_c-1]._state; return 3; }
+
+     for (_i=0;_i<_c;_i++,_ACT++)
+	{ if (_ACT->_tok==_tok || _ACT->_tok== -2) break; }
+
+     if (_i<_c)
+	{ *_pnst=_ACT->_state;
+	   if (_ACT->_tok==_tok  && *_pnst>=0) return 1;
+	   return 2;
+	}
+
+     return 0;
+}
+
+

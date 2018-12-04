@@ -18,7 +18,7 @@ void Exp()
 		Resto();
 	}
 	else
-		error();	   
+			   error();	   
 }
 void Resto()
 {
@@ -39,7 +39,7 @@ void Resto()
 			Resto();
 		}
 		else;//cadena vacia \
-		   
+		
 	}
 }
 
@@ -52,7 +52,7 @@ void Term()
 		parea(preanalisis);	
 	}
 	else
-		error();	   
+			   error();	   
 }
 void error()
 {
@@ -60,8 +60,10 @@ void error()
 }
 void parea(int t)
 {
-	if(preanalisis==t)
+	if(preanalisis==t){
 		preanalisis=getchar();
+		printf("Pre tiene:",preanalisis);
+	}
 	else
 		error();
 }

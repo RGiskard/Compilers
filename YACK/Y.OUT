@@ -1,0 +1,91 @@
+
+state 0
+	$accept : _S $end 
+
+	x  shift 2
+	a  shift 4
+	.  error
+
+	S  goto 1
+	A  goto 3
+
+state 1
+	$accept :  S_$end 
+
+	$end  accept
+	.  error
+
+
+state 2
+	S :  x_S 
+
+	x  shift 2
+	a  shift 4
+	.  error
+
+	S  goto 5
+	A  goto 3
+
+state 3
+	S :  A_B c 
+
+	b  shift 7
+	.  error
+
+	B  goto 6
+
+state 4
+	A :  a_    (3)
+
+	.  reduce 3
+
+
+state 5
+	S :  x S_    (1)
+
+	.  reduce 1
+
+
+state 6
+	S :  A B_c 
+
+	c  shift 8
+	.  error
+
+
+state 7
+	B :  b_    (4)
+
+	.  reduce 4
+
+
+state 8
+	S :  A B c_    (2)
+
+	.  reduce 2
+
+
+6/150 terminals, 3/200 nonterminals
+5/400 grammar rules, 9/600 states
+0 shift/reduce, 0 reduce/reduce conflicts reported
+4/250 working sets used
+memory: states,etc. 59/6000, parser 4/4000
+6/450 distinct lookahead sets
+0 extra closures
+6 shift entries, 1 exceptions
+4 goto entries
+1 entries saved by goto default
+Optimizer space used: input 19/6000, output 24/4000
+24 table entries, 16 zero
+maximum spread: 120, maximum offset: 99
+
+6/150 terminals, 3/200 nonterminals
+5/400 grammar rules, 9/600 states
+0 shift/reduce, 0 reduce/reduce conflicts reported
+4/250 working sets used
+memory: states,etc. 59/6000, parser 4/4000
+6/450 distinct lookahead sets
+0 extra closures
+6 shift entries, 1 exceptions
+4 goto entries
+1 entries saved by goto default
